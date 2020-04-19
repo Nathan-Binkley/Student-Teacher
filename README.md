@@ -1,2 +1,2 @@
 # Student-Teacher
-Check with Clemson Facebook if user is a student or teacher
+A reddit bot designed to inform users whether or not a Professor/Class is via Clemson's Grade Distribution Report data.
