@@ -38,7 +38,7 @@ def process_Search(orig_query: str) -> str: #Primary search function and process
 
     else:
         data_list = master_list[query]
-        name = data_list[-1]['name']
+        name = data_list[-1]['name'] # Get the most recent course name on file. If we did the beginning, it'd throw the incorrect name because Clemson is big dumb.
         # print(data_list)
         A = []
         B = []
@@ -86,61 +86,65 @@ def getInitials(Name):
     return initials
 
 def initialize():
-    with open("master.csv", "r") as f:
-        line = f.readline()
-        while(line):
-            fileLines.append(line)
+    try:
+        with open("master.json", "r")as f:
+            master_list = json.load(f)
+    except Exception as e:
+        print(e)
+        with open("master.csv", "r") as f:
             line = f.readline()
-        #print("End of file. Length of fileLines = " + str(len(fileLines)))
+            while(line):
+                fileLines.append(line)
+                line = f.readline()
+            #print("End of file. Length of fileLines = " + str(len(fileLines)))
 
-        for i in fileLines:
-            
-            testData = i.split(",")
-            course = testData[0]
-            number = testData[1]
-            section = testData[2]
-            course_title = testData[3]
-            A_Grade = testData[4]
-            B_Grade = testData[5]
-            C_Grade = testData[6]
-            D_Grade = testData[7]
-            F_Grade = testData[8]
-            P_Grade = testData[9]
-            F_P_Grade = testData[10]
-            Withdraw = testData[11]
-            if fileLines[-1] == "H":
-                Name = "".join(testData[12:-1])
-                Honors = testData[-1]
-            else:
-                Name = "".join(testData[12:])
-            Name = Name.strip()
+            for i in fileLines:
+                
+                testData = i.split(",")
+                course = testData[0]
+                number = testData[1]
+                section = testData[2]
+                course_title = testData[3]
+                A_Grade = testData[4]
+                B_Grade = testData[5]
+                C_Grade = testData[6]
+                D_Grade = testData[7]
+                F_Grade = testData[8]
+                P_Grade = testData[9]
+                F_P_Grade = testData[10]
+                Withdraw = testData[11]
+                if fileLines[-1] == "H":
+                    Name = "".join(testData[12:-1])
+                    Honors = testData[-1]
+                else:
+                    Name = "".join(testData[12:])
+                Name = Name.strip()
 
-            data = {
-                "name":course_title,
-                "A":A_Grade,
-                "B":B_Grade,
-                "C":C_Grade,
-                "D":D_Grade,
-                "F":F_Grade,
-                "W":Withdraw,
-                "Professor": Name,
-                "Prof Initials": getInitials(Name[1:-1])
-            }
-            if course+"-"+number in master_list:
-                master_list[course+"-"+number].append(data)
-            else:
-                master_list[course+"-"+number] = []
-                master_list[course+"-"+number].append(data)
-            
-    with open("master.json","w+") as f:
-        json.dump(master_list, f, indent=4)
+                data = {
+                    "name":course_title,
+                    "A":A_Grade,
+                    "B":B_Grade,
+                    "C":C_Grade,
+                    "D":D_Grade,
+                    "F":F_Grade,
+                    "W":Withdraw,
+                    "Professor": Name,
+                    "Prof Initials": getInitials(Name[1:-1])
+                }
+                if course+"-"+number in master_list:
+                    master_list[course+"-"+number].append(data)
+                else:
+                    master_list[course+"-"+number] = []
+                    master_list[course+"-"+number].append(data)
+                
+        with open("master.json","w+") as f:
+            json.dump(master_list, f, indent=4)
 
 
-# def initializeSpecial():
-#     for i in 
+
 
 initialize()
-# initializeSpecial()
+
 while(True):
     query = input("What do you want to search (Course-Number)\n")
     print("Since Spring 2014, there was an average of " + process_Search(query))
