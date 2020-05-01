@@ -177,9 +177,7 @@ def process_profQuery(Name):
     F = []
     W = []
     P = []
-    NP = []
-
-    
+    NP = []    
     for i in data_list:
         A.append(i['A'])
         B.append(i['B'])
@@ -187,24 +185,16 @@ def process_profQuery(Name):
         D.append(i['D'])
         F.append(i['F'])
         W.append(i['W'])
-
     gradesList = (A,B,C,D,F,W,P,NP)
-    
     for letterGrade in gradesList:
         for i in range(len(letterGrade)):
-        
             letterGrade[i] = int(letterGrade[i][:-1])
-
-    
     AvgA = sum(A)//len(A)
     AvgB = sum(B)//len(B)
     AvgC = sum(C)//len(C)
     AvgD = sum(D)//len(D)
     AvgF = sum(F)//len(F)
     AvgWithdraw = sum(W)//len(W)
-
-    
-
     return "Average; A: " + str(AvgA) + "% B: " + str(AvgB) + "% C: " + str(AvgC) + "% D: " + str(AvgD) + "% F: " + str(AvgF) + "% W: " + str(AvgWithdraw) + "% from " + str(len(data_list)) + " class(es) for Prof./Dr. " + query + "\n"
 
 
