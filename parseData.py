@@ -95,16 +95,13 @@ def process_Search(orig_query: str) -> str: #Primary search function and process
         data = []
 
         for i in professorGrades:
-            print("PROFESSORS")
-            print(i)
-            print(professorGrades)
+            
             try:
                 professorGrades[i].extend(process_profQuery(i))
                 data = professorGrades[i]
             except Exception as e:
                 print(e)
-            print("PROFF")
-            print()
+            
             if data[0] > bestProfAB:
                 bestProfName = i
                 bestProfAB = data[0]
@@ -206,7 +203,6 @@ def getFirstLast(Name):
 
 
 def process_profQuery(Name):
-    print("QUERY")
     data_list = master_prof_list[Name]
     
     A = []
@@ -219,7 +215,6 @@ def process_profQuery(Name):
     C = []
     D = [] # Incase you want these 
 
-    print("HERE")
     for i in data_list:
         A.append(i['A'])
         B.append(i['B'])
@@ -239,9 +234,6 @@ def process_profQuery(Name):
     AvgF = sum(F)//len(F)
     AvgWithdraw = sum(W)//len(W)
 
-    print("AVG A+B")
-    print(AvgA + AvgB)
-   
     return  [(AvgA + AvgB), (AvgF+AvgWithdraw), (len(data_list))]
 
 
