@@ -7,7 +7,6 @@ converted_files = ['2013Fall.csv', '2014Spring.csv', '2014Fall.csv', '2015Spring
 fileLines = []
 master_list = {}
 master_prof_list = {}
-testData = [0,1,2]
 
 
 
@@ -17,6 +16,7 @@ def process_Search(orig_query: str) -> str: #Primary search function and process
     
     items = query.split("-")
     master_String = ''
+
     if("ALL" in items):
         print("ALL IN QUERY")
         print("HERE COMES THE SUN")
@@ -49,6 +49,9 @@ def process_Search(orig_query: str) -> str: #Primary search function and process
         W = []
         P = []
         NP = []
+        
+    
+        professorGrades = {}
 
         
         for i in data_list:
@@ -59,14 +62,18 @@ def process_Search(orig_query: str) -> str: #Primary search function and process
             F.append(i['F'])
             W.append(i['W'])
 
+            
+            searchableName = getFirstLast(i['Professor'])
+
+            professorGrades[searchableName] = []
+            
+
         gradesList = (A,B,C,D,F,W,P,NP)
         
         for letterGrade in gradesList:
             for i in range(len(letterGrade)):
-            
                 letterGrade[i] = int(letterGrade[i][:-1])
 
-        
         AvgA = sum(A)//len(A)
         AvgB = sum(B)//len(B)
         AvgC = sum(C)//len(C)
@@ -74,25 +81,51 @@ def process_Search(orig_query: str) -> str: #Primary search function and process
         AvgF = sum(F)//len(F)
         AvgWithdraw = sum(W)//len(W)
 
-        return "Average; A: " + str(AvgA) + "% B: " + str(AvgB) + "% C: " + str(AvgC) + "% D: " + str(AvgD) + "% F: " + str(AvgF) + "% W: " + str(AvgWithdraw) + "% from " + str(len(data_list)) + " class(es) for " + orig_query + ": " + name + "\n"
+        courseString = "Average; A: " + str(AvgA) + "% B: " + str(AvgB) + "% C: " + str(AvgC) + "% D: " + str(AvgD) + "% F: " + str(AvgF) + "% W: " + str(AvgWithdraw) + "% from " + str(len(data_list)) + " class(es) for " + orig_query + ": " + name
+        
+
+        bestProfName = "" #Professor name to go in professor string
+        bestProfAB = 0
+        bestProfLenCount = 0
+
+        worstProfName = ""
+        worstProfFW = 0
+        worstProfLenCount = 0
+
+        data = []
+
+        for i in professorGrades:
+            print("PROFESSORS")
+            print(i)
+            print(professorGrades)
+            try:
+                professorGrades[i].extend(process_profQuery(i))
+                data = professorGrades[i]
+            except Exception as e:
+                print(e)
+            print("PROFF")
+            print()
+            if data[0] > bestProfAB:
+                bestProfName = i
+                bestProfAB = data[0]
+                bestProfLenCount = data[-1]
+            if data[1] > worstProfFW:
+                worstProfName = i
+                worstProfFW = data[1]
+                worstProfLenCount = data[-1]
+        
+        profString = "The statistically best professor is " + bestProfName + " with an A+B Avg of " + str(bestProfAB) + "% in " + str(bestProfLenCount) + " classes\n\nThe statistically worst professor is " + worstProfName + " with an F+W Avg of " + str(worstProfFW) + "% out of " + str(worstProfLenCount) + " class(es)" #Final professor string
+
+        return courseString + "\n\n" + profString + "\n\n"
+
+
 
 def getInitials(Name):
-    if Name == "Dean Brian Chrisop":
-        print(Name)
-        initials = ""
-        Name = Name.split()
-        print(Name)
-        Name = Name[1:] + [Name[0]] #Rotates it
-        print(Name)
-        for i in Name:
-            initials += i[0]
-            print(initials)
-    else:
-        initials = ""
-        Name = Name.split()
-        Name = Name[1:] + [Name[0]] #Rotates it
-        for i in Name:
-            initials += i[0]
+    initials = ""
+    Name = Name.split()
+    Name = Name[1:] + [Name[0]] #Rotates it
+    for i in Name:
+        initials += i[0]
     return initials
 
 def initialize():
@@ -155,10 +188,14 @@ def initialize():
                 master_prof_list[FL] = []
                 master_prof_list[FL].append(data)
             
-    with open("master.json","w+") as f: #Primarily used for debugging atm
-        json.dump(master_list, f, indent=4)
+    # with open("master_ind.json","w+") as f: #Primarily used for debugging atm
+    #     json.dump(master_list, f, indent=4)
+    # with open("master_prof_ind.json", "w+") as f:
+    #     json.dump(master_prof_list, f, indent=4)
+    with open("master.json","w+") as f: #Unformatted data, useful for space
+        json.dump(master_list, f)
     with open("master_prof.json", "w+") as f:
-        json.dump(master_prof_list, f, indent=4)
+        json.dump(master_prof_list, f)
 
 def getFirstLast(Name):
     FML = Name.split()
@@ -166,18 +203,23 @@ def getFirstLast(Name):
     Last = FML[0]
     return First + " " + Last
 
+
+
 def process_profQuery(Name):
-    data_list = master_prof_list[query]
-    name = data_list[-1]['name'] # Get the most recent course name on file. If we did the beginning, it'd throw the incorrect name because Clemson is big dumb.
-    # print(data_list)
+    print("QUERY")
+    data_list = master_prof_list[Name]
+    
     A = []
     B = []
-    C = []
-    D = []
     F = []
     W = []
     P = []
     NP = []    
+
+    C = []
+    D = [] # Incase you want these 
+
+    print("HERE")
     for i in data_list:
         A.append(i['A'])
         B.append(i['B'])
@@ -189,13 +231,20 @@ def process_profQuery(Name):
     for letterGrade in gradesList:
         for i in range(len(letterGrade)):
             letterGrade[i] = int(letterGrade[i][:-1])
+
     AvgA = sum(A)//len(A)
     AvgB = sum(B)//len(B)
     AvgC = sum(C)//len(C)
     AvgD = sum(D)//len(D)
     AvgF = sum(F)//len(F)
     AvgWithdraw = sum(W)//len(W)
-    return "Average; A: " + str(AvgA) + "% B: " + str(AvgB) + "% C: " + str(AvgC) + "% D: " + str(AvgD) + "% F: " + str(AvgF) + "% W: " + str(AvgWithdraw) + "% from " + str(len(data_list)) + " class(es) for Prof./Dr. " + query + "\n"
+
+    print("AVG A+B")
+    print(AvgA + AvgB)
+   
+    return  [(AvgA + AvgB), (AvgF+AvgWithdraw), (len(data_list))]
+
+
 
 
 def toCamelCase(Name):
@@ -208,14 +257,11 @@ def toCamelCase(Name):
 initialize()
 
 while(True):
-    query = input("What do you want to search (<prof/class> <prof Name/Class>)\n")
-    if "prof" in query:
-        throaway, query = query.split(" ", 1)
-        query = toCamelCase(query)
-        print("Since Spring 2014, there was an average of " + process_profQuery(query))
-    elif "class" in query:
-        throwaway, query = query.split(" ", 1)
+    query = input("What course do you want to search? (Format: <Course>-<number> ie CPSC-3720)\n")
+    try:
+        
         print("Since Spring 2014, there was an average of " + process_Search(query))
-    else:
-        print("")
+    except Exception as e:
+        print("Something went wrong somewhere, idk bout that")
+        print(e)
 
