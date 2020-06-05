@@ -245,8 +245,19 @@ def toCamelCase(Name):
         items[i] = items[i][0].upper() + items[i][1:].lower()
     return " ".join(items)
 
+def getAllCourses():
+    temp = []
+    for i in master_list:
+        if i[:-5] not in temp:
+            temp.append(i[:-5])
+        else:
+            pass
+    with open("CourseList.txt", "w") as f:
+        for i in range(len(temp)):
+            f.write(temp[i]+"\n")
 
 initialize()
+getAllCourses()
 
 while(True):
     query = input("What course do you want to search? (Format: <Course>-<number> ie CPSC-3720)\n")
@@ -256,4 +267,3 @@ while(True):
     except Exception as e:
         print("Something went wrong somewhere, idk bout that")
         print(e)
-
