@@ -126,73 +126,88 @@ def getInitials(Name):
     return initials
 
 def initialize():
-    with open("master.csv", "r") as f:
-        line = f.readline()
-        while(line):
-            fileLines.append(line)
+
+    global master_list, master_prof_list
+
+    if os.path.isfile('./master.json'): #SKIP PARSE DATA WHEN NOT NECESSARY
+        print("FOUND COURSE FILE")
+        with open('master.json', 'r') as f:
+            master_list = json.load(f)
+        # print(master_list)
+        if os.path.isfile('./master_prof.json'):
+            print("FOUND PROF FILE")
+            with open('master_prof.json', 'r') as f:
+                master_prof_list = json.load(f)
+        else:
+            print("PROF FILE NOT FOUND")
+    else:
+        with open("master.csv", "r") as f:
             line = f.readline()
-        #print("End of file. Length of fileLines = " + str(len(fileLines)))
+            while(line):
+                fileLines.append(line)
+                line = f.readline()
+            #print("End of file. Length of fileLines = " + str(len(fileLines)))
 
-        for i in fileLines:
-            
-            testData = i.split(",")
-            course = testData[0]
-            number = testData[1]
-            section = testData[2]
-            course_title = testData[3]
-            A_Grade = testData[4]
-            B_Grade = testData[5]
-            C_Grade = testData[6]
-            D_Grade = testData[7]
-            F_Grade = testData[8]
-            P_Grade = testData[9]
-            F_P_Grade = testData[10]
-            Withdraw = testData[11]
-            if fileLines[-1] == "H":
-                Name = "".join(testData[12:-1])
-                Honors = testData[-1]
-            else:
-                Name = "".join(testData[12:])
-            Name = Name.strip()
+            for i in fileLines:
+                
+                testData = i.split(",")
+                course = testData[0]
+                number = testData[1]
+                section = testData[2]
+                course_title = testData[3]
+                A_Grade = testData[4]
+                B_Grade = testData[5]
+                C_Grade = testData[6]
+                D_Grade = testData[7]
+                F_Grade = testData[8]
+                P_Grade = testData[9]
+                F_P_Grade = testData[10]
+                Withdraw = testData[11]
+                if fileLines[-1] == "H":
+                    Name = "".join(testData[12:-1])
+                    Honors = testData[-1]
+                else:
+                    Name = "".join(testData[12:])
+                Name = Name.strip()
 
-            if Name[0] == '"':
-                Name = Name[1:-1]
+                if Name[0] == '"':
+                    Name = Name[1:-1]
 
-            FL = getFirstLast(Name)
+                FL = getFirstLast(Name)
 
 
-            data = {
-                "name":course_title,
-                "A":A_Grade,
-                "B":B_Grade,
-                "C":C_Grade,
-                "D":D_Grade,
-                "F":F_Grade,
-                "W":Withdraw,
-                "Professor": Name,
-                "Prof Initials": getInitials(Name)
-            }
+                data = {
+                    "name":course_title,
+                    "A":A_Grade,
+                    "B":B_Grade,
+                    "C":C_Grade,
+                    "D":D_Grade,
+                    "F":F_Grade,
+                    "W":Withdraw,
+                    "Professor": Name,
+                    "Prof Initials": getInitials(Name)
+                }
 
-            if course+"-"+number in master_list:
-                master_list[course+"-"+number].append(data)
-            else:
-                master_list[course+"-"+number] = []
-                master_list[course+"-"+number].append(data)
+                if course+"-"+number in master_list:
+                    master_list[course+"-"+number].append(data)
+                else:
+                    master_list[course+"-"+number] = []
+                    master_list[course+"-"+number].append(data)
 
-            if FL in master_prof_list:
-                master_prof_list[FL].append(data)
-            else:
-                master_prof_list[FL] = []
-                master_prof_list[FL].append(data)
-            
-    # with open("master_ind.json","w+") as f: #Primarily used for debugging atm
-    #     json.dump(master_list, f, indent=4)
-    # with open("master_prof_ind.json", "w+") as f:
-    #     json.dump(master_prof_list, f, indent=4)
-    with open("master.json","w+") as f: #Unformatted data, useful for space
-        json.dump(master_list, f)
-    with open("master_prof.json", "w+") as f:
-        json.dump(master_prof_list, f)
+                if FL in master_prof_list:
+                    master_prof_list[FL].append(data)
+                else:
+                    master_prof_list[FL] = []
+                    master_prof_list[FL].append(data)
+                
+        # with open("master_ind.json","w+") as f: #Primarily used for debugging atm
+        #     json.dump(master_list, f, indent=4)
+        # with open("master_prof_ind.json", "w+") as f:
+        #     json.dump(master_prof_list, f, indent=4)
+        with open("master.json","w+") as f: #Unformatted data, useful for space
+            json.dump(master_list, f)
+        with open("master_prof.json", "w+") as f:
+            json.dump(master_prof_list, f)
 
 def getFirstLast(Name):
     FML = Name.split()
@@ -256,14 +271,28 @@ def getAllCourses():
         for i in range(len(temp)):
             f.write(temp[i]+"\n")
 
-initialize()
-getAllCourses()
+def go(course):
+    initialize()
+    getAllCourses()
+    return searchCourse(course)
 
-while(True):
-    query = input("What course do you want to search? (Format: <Course>-<number> ie CPSC-3720)\n")
+def searchCourse(query):
+    # query = input("What course do you want to search? (Format: <Course>-<number> ie CPSC-3720)\n")
     try:
-        
-        print("Since Spring 2014, there was an average of " + process_Search(query))
+        string = ''
+        string += "\n--------------------------------------------------------"
+        string += "Since Spring 2014, there was an average of " + process_Search(query)
+        string += "DISCLAIMER:"
+        string += "Not every professor listed will be at Clemson, this is a tool built for better information but not complete information"
+        string += "Take it at your own discression"
+        string += "\nIn addition, this system works on the Grade Distribution Releases located at https://www.clemson.edu/institutional-effectiveness/oir/data-reports/\n"
+        string += "As a result, the limitations according to the GDR are as follows:"
+        string += '*Course Sections that meet the following conditions are not included: Undergraduate classes with less than 10 students or Graduate classes with less than 5 students. In addition, if a section has all but 1 student making a common grade (example: All but one student makes a "B" in a class), the section is excluded.*'
+        string += '\n----------------------------------------------------------------------------'
+    except NotADirectoryError as e:
+        print("Class not found, are you sure you used the correct format? (Ex: cpsc-2120)")
     except Exception as e:
         print("Something went wrong somewhere, idk bout that")
         print(e)
+
+go("cpsc-2120")
