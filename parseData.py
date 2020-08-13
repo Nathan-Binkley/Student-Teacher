@@ -1,4 +1,5 @@
 import json
+import os
 
 special_converted_files = ['2018Fall.csv','2018Spring.csv'] #these files have special formatting for names (ie ' "Smith, John William" ' is normal and in these it's simply 'Smith John William' without commas or quotes )
 #TBH, this is the easier way to parse but whatevs
@@ -17,103 +18,106 @@ def process_Search(orig_query: str) -> str: #Primary search function and process
     items = query.split("-")
     master_String = ''
 
-    if("ALL" in items):
-        print("ALL IN QUERY")
-        print("HERE COMES THE SUN")
-        if items[0] == "ALL" and items[1] == "ALL":
-            print("ALLALL")
-            for i in master_list:
-                master_String += process_Search(i)
-        elif items[0] == "ALL":
-            for i in master_list:
-                if items[1] in i:
-                    master_String += process_Search(i)
-        elif items[1] == "ALL":
-            for i in master_list:
-                if items[0] in i:
-                    master_String += process_Search(i)
-        else:
-            print("Misunderstood")
-            return "HELP"
-        return master_String
+    # if("ALL" in items):
+    #     print("ALL IN QUERY")
+    #     print("HERE COMES THE SUN")
+    #     if items[0] == "ALL" and items[1] == "ALL":
+    #         print("ALLALL")
+    #         for i in master_list:
+    #             master_String += process_Search(i)
+    #     elif items[0] == "ALL":
+    #         for i in master_list:
+    #             if items[1] in i:
+    #                 master_String += process_Search(i)
+    #     elif items[1] == "ALL":
+    #         for i in master_list:
+    #             if items[0] in i:
+    #                 master_String += process_Search(i)
+    #     else:
+    #         print("Misunderstood")
+    #         return "HELP"
+    #     return master_String
 
-    else:
+    # else:
+    if query in master_list:
         data_list = master_list[query]
-        name = data_list[-1]['name'] # Get the most recent course name on file. If we did the beginning, it'd throw the incorrect name because Clemson is big dumb.
-        # print(data_list)
-        A = []
-        B = []
-        C = []
-        D = []
-        F = []
-        W = []
-        P = []
-        NP = []
-        
+    else:
+        raise NotADirectoryError
+    name = data_list[-1]['name'] # Get the most recent course name on file. If we did the beginning, it'd throw the incorrect name because Clemson is big dumb.
+    # print(data_list)
+    A = []
+    B = []
+    C = []
+    D = []
+    F = []
+    W = []
+    P = []
+    NP = []
     
-        professorGrades = {}
+
+    professorGrades = {}
+
+    
+    for i in data_list:
+        A.append(i['A'])
+        B.append(i['B'])
+        C.append(i['C'])
+        D.append(i['D'])
+        F.append(i['F'])
+        W.append(i['W'])
 
         
-        for i in data_list:
-            A.append(i['A'])
-            B.append(i['B'])
-            C.append(i['C'])
-            D.append(i['D'])
-            F.append(i['F'])
-            W.append(i['W'])
+        searchableName = getFirstLast(i['Professor'])
 
-            
-            searchableName = getFirstLast(i['Professor'])
-
-            professorGrades[searchableName] = []
-            
-
-        gradesList = (A,B,C,D,F,W,P,NP)
-        
-        for letterGrade in gradesList:
-            for i in range(len(letterGrade)):
-                letterGrade[i] = int(letterGrade[i][:-1])
-
-        AvgA = sum(A)//len(A)
-        AvgB = sum(B)//len(B)
-        AvgC = sum(C)//len(C)
-        AvgD = sum(D)//len(D)
-        AvgF = sum(F)//len(F)
-        AvgWithdraw = sum(W)//len(W)
-
-        courseString = "Average; A: " + str(AvgA) + "% B: " + str(AvgB) + "% C: " + str(AvgC) + "% D: " + str(AvgD) + "% F: " + str(AvgF) + "% W: " + str(AvgWithdraw) + "% from " + str(len(data_list)) + " class(es) for " + orig_query + ": " + name
+        professorGrades[searchableName] = []
         
 
-        bestProfName = "" #Professor name to go in professor string
-        bestProfAB = 0
-        bestProfLenCount = 0
+    gradesList = (A,B,C,D,F,W,P,NP)
+    
+    for letterGrade in gradesList:
+        for i in range(len(letterGrade)):
+            letterGrade[i] = int(letterGrade[i][:-1])
 
-        worstProfName = ""
-        worstProfFW = 0
-        worstProfLenCount = 0
+    AvgA = sum(A)//len(A)
+    AvgB = sum(B)//len(B)
+    AvgC = sum(C)//len(C)
+    AvgD = sum(D)//len(D)
+    AvgF = sum(F)//len(F)
+    AvgWithdraw = sum(W)//len(W)
 
-        data = []
+    courseString = "Average; A: " + str(AvgA) + "% B: " + str(AvgB) + "% C: " + str(AvgC) + "% D: " + str(AvgD) + "% F: " + str(AvgF) + "% W: " + str(AvgWithdraw) + "% from " + str(len(data_list)) + " class(es) for " + orig_query + ": " + name
+    
 
-        for i in professorGrades:
-            
-            try:
-                professorGrades[i].extend(process_profQuery(i))
-                data = professorGrades[i]
-            except Exception as e:
-                print(e)
-            
-            if data[0] > bestProfAB:
-                bestProfName = i
-                bestProfAB = data[0]
-                bestProfLenCount = data[-1]
-            if data[1] > worstProfFW:
-                worstProfName = i
-                worstProfFW = data[1]
-                worstProfLenCount = data[-1]
+    bestProfName = "" #Professor name to go in professor string
+    bestProfAB = 0
+    bestProfLenCount = 0
+
+    worstProfName = ""
+    worstProfFW = 0
+    worstProfLenCount = 0
+
+    data = []
+
+    for i in professorGrades:
         
-        profString = "The statistically best professor is " + bestProfName + " with an A+B Avg of " + str(bestProfAB) + "% in " + str(bestProfLenCount) + " classes\n\nThe statistically worst professor is " + worstProfName + " with an F+W Avg of " + str(worstProfFW) + "% out of " + str(worstProfLenCount) + " class(es)" #Final professor string
+        try:
+            professorGrades[i].extend(process_profQuery(i))
+            data = professorGrades[i]
+        except Exception as e:
+            print(e)
+        
+        if data[0] > bestProfAB:
+            bestProfName = i
+            bestProfAB = data[0]
+            bestProfLenCount = data[-1]
+        if data[1] > worstProfFW:
+            worstProfName = i
+            worstProfFW = data[1]
+            worstProfLenCount = data[-1]
+    
+    profString = "The statistically best professor is " + bestProfName + " with an A+B Avg of " + str(bestProfAB) + "% in " + str(bestProfLenCount) + " classes\n\nThe statistically worst professor is " + worstProfName + " with an F+W Avg of " + str(worstProfFW) + "% out of " + str(worstProfLenCount) + " class(es)" #Final professor string
 
-        return courseString + "\n\n" + profString + "\n\n"
+    return courseString + "\n\n" + profString + "\n\n"
 
 
 
@@ -126,7 +130,6 @@ def getInitials(Name):
     return initials
 
 def initialize():
-
     global master_list, master_prof_list
 
     if os.path.isfile('./master.json'): #SKIP PARSE DATA WHEN NOT NECESSARY
@@ -141,6 +144,7 @@ def initialize():
         else:
             print("PROF FILE NOT FOUND")
     else:
+    
         with open("master.csv", "r") as f:
             line = f.readline()
             while(line):
@@ -149,7 +153,6 @@ def initialize():
             #print("End of file. Length of fileLines = " + str(len(fileLines)))
 
             for i in fileLines:
-                
                 testData = i.split(",")
                 course = testData[0]
                 number = testData[1]
@@ -200,14 +203,11 @@ def initialize():
                     master_prof_list[FL] = []
                     master_prof_list[FL].append(data)
                 
-        # with open("master_ind.json","w+") as f: #Primarily used for debugging atm
-        #     json.dump(master_list, f, indent=4)
-        # with open("master_prof_ind.json", "w+") as f:
-        #     json.dump(master_prof_list, f, indent=4)
         with open("master.json","w+") as f: #Unformatted data, useful for space
             json.dump(master_list, f)
         with open("master_prof.json", "w+") as f:
             json.dump(master_prof_list, f)
+          
 
 def getFirstLast(Name):
     FML = Name.split()
@@ -292,7 +292,8 @@ def searchCourse(query):
     except NotADirectoryError as e:
         print("Class not found, are you sure you used the correct format? (Ex: cpsc-2120)")
     except Exception as e:
+        
         print("Something went wrong somewhere, idk bout that")
         print(e)
 
-go("cpsc-2120")
+go('cpsc-2120')
