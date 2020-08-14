@@ -6,6 +6,7 @@ import time
 import praw
 import keys
 import praw.exceptions
+import praw.models
 
 special_converted_files = ['2018Fall.csv','2018Spring.csv'] #these files have special formatting for names (ie ' "Smith, John William" ' is normal and in these it's simply 'Smith John William' without commas or quotes )
 #TBH, this is the easier way to parse but whatevs
@@ -273,18 +274,22 @@ def reddit():
 
     while True:
         print("CONNECTED")
-        for mention in reddit.inbox.mentions(limit=25):
-            body = mention.body
-            course = body.split()[1]
-            try:
-                mention.reply(go(course))
-            except praw.exceptions.RedditAPIException as e:
-                print(e)
-                print("Sleeping for 10 minutes")
-                time.sleep(600)
-                mention.reply(go(course))
+        for mention in reddit.inbox.unread(limit=None):
+            if isinstance(mention, praw.models.Comment) and 'u/ClemsonClassBot' in mention.body:
+                print("NEW MENTION: " + str(mention.author))
+                print("MENTION TEXT: " + str(mention.body))
+                body = mention.body
+                course = body.split()[1]
+                try:
+                    mention.reply(go(course))
+                except praw.exceptions.RedditAPIException as e:
+                    print(e)
+                    print("Sleeping for 10 minutes")
+                    time.sleep(600)
+                    mention.reply(go(course))
             mention.mark_read()
-        time.sleep(300)
+        print("Sleeping for another 5 seconds. Reached end of mentions list")
+        time.sleep(5)
 
 def purge(count = 1000): #Just incase I need to purge the reddit account -- specifically after testing
     mee = reddit.user.me()
