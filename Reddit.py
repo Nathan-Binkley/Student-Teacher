@@ -17,11 +17,6 @@ master_list = {}
 master_prof_list = {}
 
 
-
-
-
-
-
 def process_Search(orig_query: str) -> str: #Primary search function and processing for a query. A query is generally defined by 
                                    #"Course-Number" of which it pulls the data from the DB.
     query = orig_query.upper()
@@ -112,20 +107,19 @@ def getInitials(Name):
         initials += i[0]
     return initials
 
-def initialize():
+def initialize(year):
     global master_list, master_prof_list
 
-    if os.path.isfile('./master.json'): #SKIP PARSE DATA WHEN NOT NECESSARY
-        with open('master.json', 'r') as f:
+    if os.path.isfile(f'./master-{year}.json'): #SKIP PARSE DATA WHEN NOT NECESSARY
+        with open(f'master-{year}.json', 'r') as f:
             master_list = json.load(f)
         # print(master_list)
-        if os.path.isfile('./master_prof.json'):
-            with open('master_prof.json', 'r') as f:
+        if os.path.isfile(f'./master_prof-{year}.json'):
+            with open(f'master_prof-{year}.json', 'r') as f:
                 master_prof_list = json.load(f)
         
     else:
-    
-        with open("master.csv", "r") as f:
+        with open(f"Processed_CSV/master-{year}.csv", "r") as f:
             line = f.readline()
             while(line):
                 fileLines.append(line)
@@ -183,16 +177,22 @@ def initialize():
                     master_prof_list[FL] = []
                     master_prof_list[FL].append(data)
                 
-        with open("master.json","w+") as f: #Unformatted data, useful for space
+        with open(f"master-{year}.json","w+") as f: #Unformatted data, useful for space
             json.dump(master_list, f)
-        with open("master_prof.json", "w+") as f:
+        with open(f"master_prof-{year}.json", "w+") as f:
             json.dump(master_prof_list, f)      
 
 def getFirstLast(Name):
-    FML = Name.split()
-    First = FML[1]
-    Last = FML[0]
-    return First + " " + Last
+    try:
+        FML = Name.split()
+        First = FML[1]
+        Last = FML[0]
+
+        return First + " " + Last
+    except Exception as e:
+        print(Name)
+        print(e)
+        raise
 
 def process_profQuery(Name):
     data_list = master_prof_list[Name]
@@ -234,16 +234,35 @@ def toCamelCase(Name):
         items[i] = items[i][0].upper() + items[i][1:].lower()
     return " ".join(items)
 
-def go(course):
-    initialize()
+def go(course, year=2014):
+    initialize(year)
     # getAllCourses()
-    return searchCourse(course)
+    return searchCourse(course, year)
 
-def searchCourse(query):
+def testAll(year):
+    with open(f'master-{year}.json', 'r') as f:
+        master_list = json.load(f) 
+    with open(f'master_prof-{year}.json','r') as f:
+        master_prof_list = json.load(f)
+
+    # print(master_list)
+    # print(master_prof_list)
+    master_String = ''
+    for i in master_list:
+        print(i)
+        print(process_Search(i))
+        try:
+            master_String += process_Search(i)
+        except Exception as e:
+            print(e)
+
+    return master_String
+
+def searchCourse(query,year):
     try:
         string = ''
         string += "\n--------------------------------------------------------\n"
-        string += "Since Spring 2014, there was an average of " + process_Search(query)
+        string += f"Since Fall {int(year)-1}, there was an average of " + process_Search(query)
         string += "\n\n^DISCLAIMER:\n"
         string += "^(Not every professor listed will be at Clemson, this is a tool built for better information but not complete information)\n"
         string += "^(Take it at your own discression)"
@@ -259,9 +278,9 @@ def searchCourse(query):
         return "Class not found, are you sure you used the correct format? (Ex: cpsc-2120)"
         
     except Exception as e:
-        
+        print(e)
         return "Something went wrong somewhere, idk bout that"
-    
+
 
     return string
 # Do reddit things
@@ -300,4 +319,8 @@ def purge(count = 1000): #Just incase I need to purge the reddit account -- spec
         print("Deleted " + str(i))
         i += 1
 
-reddit()
+# reddit()
+initialize('2014')
+print(go('cpsc-2120','2014'))
+initialize('2015')
+print(go('cpsc-2120','2015'))
