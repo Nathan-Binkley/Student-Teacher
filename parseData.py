@@ -281,7 +281,7 @@ def searchCourse(query):
     try:
         
         print("\n--------------------------------------------------------")
-        print("Since Spring 2014, there was an average of " + process_Search(query))
+        print("Since Spring 2014, there was an " + process_Search(query))
         print("DISCLAIMER:")
         print("Not every professor listed will be at Clemson, this is a tool built for better information but not complete information")
         print("Take it at your own discression")
@@ -296,4 +296,4 @@ def searchCourse(query):
         print("Something went wrong somewhere, idk bout that")
         print(e)
 
-go('cpsc-2120')
+go('cpsc-3520')
