@@ -180,6 +180,8 @@ def initialize():
 
 
                 data = {
+                    "course":course,
+                    "number":number,
                     "name":course_title,
                     "A":A_Grade,
                     "B":B_Grade,
@@ -203,10 +205,12 @@ def initialize():
                     master_prof_list[FL] = []
                     master_prof_list[FL].append(data)
                 
-        with open("master.json","w+") as f: #Unformatted data, useful for space
-            json.dump(master_list, f)
+        # with open("master.json","w+") as f: #Unformatted data, useful for space
+        #     json.dump(master_list, f)
         with open("master_prof.json", "w+") as f:
             json.dump(master_prof_list, f)
+        with open("master_prof_ind.json", "w+") as f:
+            json.dump(master_prof_list, f, indent=4)
           
 
 def getFirstLast(Name):
@@ -296,4 +300,5 @@ def searchCourse(query):
         print("Something went wrong somewhere, idk bout that")
         print(e)
 
-go('cpsc-3520')
+initialize()
+# go('cpsc-3520')
